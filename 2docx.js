@@ -9,7 +9,8 @@ const {
   LevelFormat
 } = require('docx');
 const fs = require('fs');
-const topic = jsonfile.readFileSync("./topic.json")
+const { join } = require('path');
+const topic = jsonfile.readFileSync(join(__dirname,"./topic.json"))
 const doc = new Document({
   creator: "辣条协会会长",
   title: "题目",
@@ -169,5 +170,5 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync('./test.docx', buffer)
+  fs.writeFileSync(join(__dirname,'./test.docx'), buffer)
 })
