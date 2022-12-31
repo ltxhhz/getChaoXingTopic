@@ -10,7 +10,7 @@ const {
 } = require('docx');
 const fs = require('fs');
 const { join } = require('path');
-const topic = jsonfile.readFileSync(join(__dirname,"./topic.json"))
+const topic = jsonfile.readFileSync(join(__dirname, "./topic1.json"))
 const doc = new Document({
   creator: "辣条协会会长",
   title: "题目",
@@ -103,10 +103,10 @@ const doc = new Document({
             }))
             block.forEach((value, index) => {
               value.question
-              if (value.option) {
+              if (value.option ?? value.options) {
                 data.push(
                   new Paragraph({
-                    text: value.question,
+                    text: value.question ?? value.title,
                     numbering: {
                       reference: "title",
                       level: 0,
@@ -116,10 +116,23 @@ const doc = new Document({
                       before: index == 1 ? 120 : undefined
                     }
                   }),
-                  ...value.option.map(e => new Paragraph({
-                    text: e,
-                    style: "options"
-                  })),
+                  ...(() => {
+                    let opt = (value.option ?? value.options)
+                    if (opt instanceof Array) {
+                      return opt.map(e => new Paragraph({
+                        text: e,
+                        style: "options"
+                      }))
+                    }
+                    let a = []
+                    for (const key in opt) {
+                      a.push(new Paragraph({
+                        text: `${key}. ${opt[key]}`,
+                        style: 'options'
+                      }))
+                    }
+                    return a
+                  })(),
                   new Paragraph({
                     children: [
                       new TextRun({
@@ -127,7 +140,7 @@ const doc = new Document({
                         bold: true
                       }),
                       new TextRun({
-                        text: value.answer
+                        text: value.answer ?? value.ans
                       }),
                     ],
                     style: "answer"
@@ -136,7 +149,7 @@ const doc = new Document({
               } else {
                 data.push(
                   new Paragraph({
-                    text: value.question,
+                    text: value.question ?? value.title,
                     numbering: {
                       reference: "title",
                       level: 0,
@@ -153,7 +166,7 @@ const doc = new Document({
                         bold: true
                       }),
                       new TextRun({
-                        text: value.answer
+                        text: value.answer ?? value.ans
                       }),
                     ],
                     style: "answer"
@@ -170,5 +183,5 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync(join(__dirname,'./test.docx'), buffer)
+  fs.writeFileSync(join(__dirname, './output.docx'), buffer)
 })
